@@ -57,6 +57,7 @@ php artisan make:controller ModalController
 5. Abre el archivo del controlador generado (`app/Http/Controllers/ModalController.php`) y agrega un método para mostrar el modal:
 
 ```php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -71,42 +72,113 @@ class ModalController extends Controller
         // Verificar si ya se mostró el modal hoy
         $modalTracking = ModalTracking::where('last_shown_date', $today)->first();
         if ($modalTracking) {
-            return view('modal')->with('showModal', false);
-        }
-
+            echo json_encode(false);   
+        }else{
         // Si no se mostró el modal hoy, almacenar la fecha actual y mostrar el modal
-        ModalTracking::create(['last_shown_date' => $today]);
+           echo json_encode(true);
+           }
+      }
 
-        return view('modal')->with('showModal', true);
+
+     public function registroModal(Request $request)
+       {
+        $today = date('Y-m-d');
+        $modalTracking = ModalTracking::where('last_shown_date', $today)->first();
+        if ($modalTracking) {
+               return redirect('/');
+        }else{
+           ModalTracking::create(['last_shown_date' => $today]);
+           return redirect('/');
+           }
+
     }
 }
+
 ```
 
 6. Crea una vista para el contenido del modal. Por ejemplo, crea un archivo `modal.blade.php` en la carpeta `resources/views` con el siguiente contenido:
 
-```html
-@if ($showModal)
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <p>Contenido del modal</p>
+<!--<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>How To Add Bootstrap 5 Modal Popup In Laravel 9 - Websolutionstuff</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+      
+  <div class="modal fade" id="mostrarmodal" role="dialog" aria-labelledby="myLargeModalLabel" data-backdrop="static">
+    <div  class="modal-dialog modal-lg" role="document">
+    
+     
+      <div class="modal-content">
+         {!!Form::open(['route'=>['registro'],'method'=>'GET'])!!}
+        <div class="modal-header">
+         <p>
+           <strong>ACUERDO DE CONFIDENCIALIDAD Y USO DE HERRAMIENTAS TECNOLOGICAS Y SISTEMAS DE INFORMACION DEL </strong> 
+         <p>
         </div>
+
+        <div class="modal-body">  
+            El presente Acuerdo de Confidencialidad es un instrumento que lo suscriben los servidores/as del xxxxxxxxxxxxx del MSP,  (bajo cualquier modalidad de prestación de servicios), y tiene como fin afianzar el compromiso del servidor/a con la institución, respecto del uso de los recursos informáticos que la institución dispone y que entrega a cada uno de sus servidores/as, para el cumplimiento de sus funciones; en consecuencia, quienes forman parte de esta entidad, al acceder al mismo,  aceptan las limitaciones y restricciones de acceso a la información y a la divulgación de la misma.
+            
+            
+            </div>
+           
+       
+       <div class="modal-footer">
+
+        {!!Form::submit('Aceptar',['class'=>'btn btn-success'])!!}
+
+       </div>
+      </div>
     </div>
-@endif
-```
+  </div>
+
+
+    </body>
+</html>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+              $.ajax({
+                    url: "<?php echo route('modal') ?>",
+                    method:'GET',
+                    data:{},
+                    dataType:'json',
+                    success:function(data)
+                      {      
+                       if (data=== true) { 
+                        $("#mostrarmodal").modal("show");
+                        } else { 
+                           alert("ACUERDO DE CONFIDENCIALIDAD Y USO DE HERRAMIENTAS TECNOLOGICAS Y SISTEMAS DE INFORMACION YA FUE ACEPTADO EL DIA DE HOY");
+                           //alert(data.last_shown_date)
+                        }   
+                       }   
+                    });
+
+            });
+</script>
+-->
+
+
+
 
 7. Define una ruta en el archivo `web.php` para acceder al controlador y mostrar el modal:
 
 ```php
 use App\Http\Controllers\ModalController;
 
-Route::get('/modal', [ModalController::class, 'showModal']);
+Route::get('/modal', [ModalController::class, 'showModal'])->name('modal');
+
+Route::get('/registro', [ModalController::class, 'registroModal'])->name('registro');
 ```
 
-8. En tu archivo HTML principal, incluye un enlace o botón que redirija a la ruta definida (`/modal`). Por ejemplo:
 
-```html
-<a href="/modal">Mostrar modal</a>
-```
 
 Con estos pasos, cuando el usuario haga clic en el enlace o botón para mostrar el modal, Laravel verificará si el modal ya se mostró hoy consultando la tabla `modal_trackings`. Si ya se mostró, no se mostrará nuevamente. Si no se mostró hoy, se almacenará la fecha actual en la tabla y se mostrará el modal.
